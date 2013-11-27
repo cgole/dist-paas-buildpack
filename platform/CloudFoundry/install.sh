@@ -9,15 +9,6 @@ source "$BUILDPACK_DIR/lib/vars.sh"
 source "$SCRIPT_DIR/vars.sh"
 
 
-#
-#  Get StrongLoop Node debian package name.
-#
-function _get_debian_package_name() {
-  local version=${1:-"$STRONGLOOP_DEFAULT_NODE_VERSION"}
-  echo "${STRONGLOOP_NODE_PACKAGE_NAME}_${version}_$DEB_PACKAGE_EXTENSION"
-
-}  #  End of function  _get_debian_package_name.
-
 
 #
 #  Prints the specified message - formatted.
@@ -55,6 +46,47 @@ function _print_installed_version() {
 #  Example:
 #    download_strongloop_debian_package "1.0.0-0.1_beta" ~/myapp ./cache
 #
+
+function install() {
+  print_message "Trying to install node here"
+  node_version=`node --version`
+  print_message "Node version==== $node_version"
+  which_node=`which node`
+  print_message "Where node $which_node"
+  return 0
+
+}
+
+
+install "$@"
+
+
+
+#
+#  Print installed StrongLoop Node version.
+#
+function _print_installed_version() {
+  local install_dir=$1
+
+  local slnodebin=$install_dir/$STRONGLOOP_INSTALL_BIN_DIR/node
+  if [ ! -f "$slnodebin" ]; then
+    print_message "  - ERROR: No StrongLoop Node binary '$slnodebin' found."
+    return 1
+  fi
+
+  local zver=$("$slnodebin" --version)
+  print_message "  - Installed StrongLoop Node version '$zver'"
+  return 0
+
+}  #  End of function  _print_installed_version.
+
+
+#
+#  Download StrongLoop Node Debian Package from the CDN.
+#  Example:
+#    download_strongloop_debian_package "1.0.0-0.1_beta" ~/myapp ./cache
+#
+function 
 function download_strongloop_debian_package() {
   local version=${1:-"$STRONGLOOP_DEFAULT_NODE_VERSION"}
   local dldir=${2:-"/tmp/strongloop"}
