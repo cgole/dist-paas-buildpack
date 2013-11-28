@@ -27,7 +27,7 @@ function print_message() {
 #
 function _print_installed_version() {
   local install_dir=$1
-
+  print_message "DEBUGING--- $install_dir"
   local slnodebin=$install_dir/$STRONGLOOP_INSTALL_BIN_DIR/node
   if [ ! -f "$slnodebin" ]; then
     print_message "  - ERROR: No StrongLoop Node binary '$slnodebin' found."
@@ -46,154 +46,19 @@ function _print_installed_version() {
 #  Example:
 #    download_strongloop_debian_package "1.0.0-0.1_beta" ~/myapp ./cache
 #
-
-function install() {
-  print_message "Trying to install node here"
-  node --version
-  ls
-  which_node=`which node`
-  print_message "Where node $which_node"
-  return 0
+version=0.10.22
+function install_node() {
+  ln -sf $BUILDPACK_DIR/versions/$version/bin/node $BUILDPACK_DIR/bin/node/
+  ln -sf $BUILDPACK_DIR/versions/$version/bin/npm $BUILDPACK_DIR/bin/node/
+  ls $BUILDPACK_DIR/bin/
+  ls $BUILDPACK_DIR/bin/node/
+  return 0;
 
 }
-
-
-install "$@"
-
-
-
-#
-#  Print installed StrongLoop Node version.
-#
-function _print_installed_version() {
-  local install_dir=$1
-
-  local slnodebin=$install_dir/$STRONGLOOP_INSTALL_BIN_DIR/node
-  if [ ! -f "$slnodebin" ]; then
-    print_message "  - ERROR: No StrongLoop Node binary '$slnodebin' found."
-    return 1
-  fi
-
-  local zver=$("$slnodebin" --version)
-  print_message "  - Installed StrongLoop Node version '$zver'"
-  return 0
-
-}  #  End of function  _print_installed_version.
-
-
-#
-#  Download StrongLoop Node Debian Package from the CDN.
-#  Example:
-#    download_strongloop_debian_package "1.0.0-0.1_beta" ~/myapp ./cache
-#
-function 
-function download_strongloop_debian_package() {
-  local version=${1:-"$STRONGLOOP_DEFAULT_NODE_VERSION"}
-  local dldir=${2:-"/tmp/strongloop"}
-  local pkgfile=$(_get_debian_package_name "$version")
-
-  mkdir -p "$dldir"
-
-  local dluri=$STRONGLOOP_CDN/$pkgfile
-  local curlopts="-L -s -S --retry 3"
-  curlopts="-L --retry 3"  #  For testing - verbose download
-
-  print_message "  - Downloading StrongLoop package $pkgfile ..."
-  print_message "      download uri = $dluri"
-  print_message "  - Download started @ $(date)"
-
-  if ! curl $curlopts -o "$dldir/$pkgfile" "$dluri"; then
-    print_message "  - Download failed  @ $(date)"
-    print_message "  - ERROR - downloading package $pkgfile failed."
-    return 1
-  fi
-
-  print_message "  - Download ended   @ $(date)"
-  print_message "  - StrongLoop package $pkgfile download completed!"
-  return 0
-
-}  #  End of function  download_strongloop_debian_package.
-
-
-#
-#  Write StrongLoop Node installation information.
-#
-#  Examples:
-#    _write_profile_info  1.0.0-0.3.beta ~/myapp .cache/
-#
-function _write_profile_info() {
-  local version=$1
-  local build_dir=$2
-  local cache_dir=$3
-
-  local profile_dir="$build_dir/.profile.d"
-  mkdir -p "$profile_dir"
-
-  local cfg_platform=$(basename "$(dirname "$SCRIPT_DIR")")
-
-  local bindir=$STRONGLOOP_VENDOR_INSTALL_DIR/$STRONGLOOP_INSTALL_BIN_DIR
-  [ -d "$build_dir/$bindir" ] || bindir=$(dirname $(which node))
-
-  local default_version=$STRONGLOOP_DEFAULT_NODE_VERSION
-
-  cat > "$profile_dir/strongloop.sh" <<MYEOF
-#  StrongLoop installation information.
-export STRONGLOOP_PLATFORM=${STRONGLOOP_PLATFORM:-"$cfg_platform"}
-export STRONGLOOP_HOST=\${VCAP_APP_HOST:-"0.0.0.0"}
-export STRONGLOOP_PORT=\${VCAP_APP_PORT:-"3000"}
-export STRONGLOOP_VERSION=${version:-"$default_version"}
-export STRONGLOOP_BIN_DIR=$bindir
-export STRONGLOOP_PACKAGE_DIR=$cache_dir
-export PATH="$bindir:node_modules/.bin:\$PATH"
-MYEOF
-
-   mkdir -p "$cache_dir/.profile.d"
-   cp -p "$profile_dir/strongloop.sh" "$cache_dir/.profile.d/"
-
-}  #  End of function  _write_profile_info.
-
-
-#
-#  Install's StrongLoop Node debian package.
-#
-function install_strongloop_debian_package() {
-  local version=${1:-"$STRONGLOOP_DEFAULT_NODE_VERSION"}
-  local build_dir=${2:-""}
-  local cache_dir=${3:-"/tmp/strongloop"}
-
-  local pkgfile=$(_get_debian_package_name "$version")
-  if [ ! -f "$cache_dir/$pkgfile" ]; then
-    download_strongloop_debian_package "$version" "$cache_dir"
-    rm -rf "$cache_dir/node_modules"
-  fi
-
-  print_message "  - Extracting $pkgfile package ..."
-  local install_dir=$build_dir/$STRONGLOOP_VENDOR_INSTALL_DIR
-  #  Extact the data.tar.gz from the debian package.
-  rm -rf "$install_dir"
-  mkdir -p "$install_dir"
-  pushd "$install_dir" > /dev/null
-  rm -rf data.tar.gz usr/
-  ar -p "$cache_dir/$pkgfile" data.tar.gz | tar -zx
-  popd > /dev/null
-
-  print_message "  - Installing $pkgfile package ..."
-  rm -rf "$cache_dir/node_modules"
-  local cachedcopy=$(dirname "$cache_dir/$STRONGLOOP_VENDOR_INSTALL_DIR")
-  mkdir -p "$cachedcopy"
-  cp -RPp "$install_dir" "$cachedcopy/"
-
-  _write_profile_info "$@"
-
-  _print_installed_version "$install_dir"
-
-}  #  End of function  install_strongloop_debian_package.
-
-
 
 #
 #  main():  Install StrongLoop Node debian package.
 #
-install_strongloop_debian_package "$@"
+install_node "$@"
 
 
