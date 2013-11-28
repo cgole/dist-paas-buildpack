@@ -49,8 +49,8 @@ function _print_installed_version() {
 
 function install() {
   print_message "Trying to install node here"
-  node_version=`node --version`
-  print_message "Node version==== $node_version"
+  node --version
+  ls
   which_node=`which node`
   print_message "Where node $which_node"
   return 0
