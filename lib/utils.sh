@@ -23,7 +23,7 @@ function init_strongloop_env() {
   if $(which node > /dev/null 2>&1); then
     export STRONGLOOP_INSTALL_BINDIR=$(dirname $(which node))
   fi
-  print_message "DEBUGGIN $(dirname $(which node))"
+  echo env | grep STRONGLOOP_INSTALL_BINDIR
 }  #  End of function  init_strongloop_env.
 
 
