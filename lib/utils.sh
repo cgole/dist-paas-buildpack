@@ -170,7 +170,7 @@ function heroku_paas_check() {
 #
 function print_strongloop_env_vars() {
   local slvars=( STRONGLOOP_OS STRONGLOOP_PLATFORM STRONGLOOP_HOST
-                 STRONGLOOP_PORT )
+                 STRONGLOOP_PORT STRONGLOOP_INSTALL_BINDIR)
 
   print_message "  - Environment settings: "
   for v in ${slvars[@]}; do
